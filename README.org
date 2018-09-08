@@ -1,0 +1,57 @@
+
+* creativeContracts
+  Our blockchain startup for creatives
+
+  En el préstamo de servicios muchas veces no se llega a una conciliación. Se
+  requiere un smart contract que establezca las reglas desde un inicio.
+
+** Ejemplo
+   Un fotógrafo requiere cobrar por su servicio la totalidad de su trabajo en la
+   semana anterior al evento requerido. El cliente necesita un comprobante de
+   que en caso de que el fotógrafo incumpla con su trabajo el cliente recibirá
+   un reembolso.
+
+   Si el fotógrafo cobra solo una parte, éste requiere un comprobante de que una
+   vez realizado su trabajo recibirá la parte restante que completa el pago de
+   su trabajo.
+
+** Notas
+   Para que esto funcione tiene que existir un /juez/ que verifique que el
+   préstamo de servicios se hizo tal cual se pactó en el contrato y de hacerse
+   todo en orden libera los recursos para la parte que presta el servicio, o
+   realiza las instrucciones de reembolso.
+
+** Estructura del contrato
+
+*** Atributos
+**** Fecha (de settlement, préstamo del servicio)
+**** Fecha de liquidación del monto
+**** Fecha (de contrato, del pacto)
+**** Monto del contrato
+     Costo del servicio a cubrir antes de la fecha de settlement
+**** Monto para el juez (que recibe por validar el contrato)
+**** Dirección al texto del contrato?
+**** Customer's address
+**** Oracle's address
+**** Business' address
+*** Behaviours
+**** Cancel contract
+     When both parties want to terminate the contract. It requires both the
+     customer and the business to verify this intent with a transaction.
+**** Settle contract
+     When the service related to the contract is completed. It requires the
+     oracle and business to verify this intent with a transaction and the full
+     amount to be loaded in the contract. The full amount will be sent to the
+     business address and the oracle will receive the validation fee stated in
+     the contract.
+**** Rebate contract
+     When the service related to the contract wasn't completed. It requires the
+     oracle and customer to verify this intent with a transaction.
+**** Add funds to the contract
+     This allows the customer to add funds to the contract. This can be done
+     only before the ~Due date~ in the contract.
+**** Claim funds
+     If at the ~Due date~ the full amount hasn't been deposited in the contract,
+     the business can claim the funds in the contract as a compensation for
+     breach of contract. This operation can only be done by the business and
+     after the ~Due date~.
