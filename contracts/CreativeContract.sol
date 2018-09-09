@@ -122,4 +122,8 @@ contract CreativeContract {
     selfdestruct(business);
     return true;
   }
+
+  function debt() public view returns (uint256) {
+      return amount - address(this).balance;
+  }
 }
