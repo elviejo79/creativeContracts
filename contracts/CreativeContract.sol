@@ -66,23 +66,24 @@ contract CreativeContract {
   }
 
   function settle() public returns (bool) {
-    // require balance is at least the oracle fee
+    require(address(this).balance >= oracleFee, "Need to fund the contract first");
+    require(msg.sender == customer || msg.sender == business);
+    require(now > settlementTimestamp, "Can't settle before contract's settlement date");
 
-    // if msg.sender == business
-    // // register business settle intent
-    // // return
-
-    // else msg.sender == oracle
-    // // require settleIntent contains business (owner)
-    // // require now > settlementTimestamp (contract settlement date has passed)
-    // // require amount == balance (contract is fully paid)
-    // // send fee to oracle from the balance
-    // // destroy contract
+    if (msg.sender == business) {
+        settleIntent[business] = true;
+        return false;
+    } else if (msg.sender == oracle) {
+        require(settleIntent[business], "Business doesn't want settle");
+        oracle.transfer(oracleFee);
+        selfdestruct(business);  // TODO Or business.transfer(amount - oracleFee) ?
+        return true;
+    }
   }
 
   function rebate() public returns (bool) {
     require(address(this).balance >= oracleFee, "Need to fund the contract first");
-    require(msg.sender == customer || msg.sender == business);
+    require(msg.sender == customer || msg.sender == oracle);
     require(now > settlementTimestamp, "Can rebate only settled contracts");
 
     if (msg.sender == customer) {
@@ -92,6 +93,7 @@ contract CreativeContract {
       require(rebateIntent[customer], "Customer doesn't want rebate");
       oracle.transfer(oracleFee);
       selfdestruct(customer);  // TODO Or customer.transfer(amount - oracleFee) ?
+      return true;
     }
   }
 
