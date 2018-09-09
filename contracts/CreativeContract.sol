@@ -119,6 +119,7 @@ contract CreativeContract {
   function claim() public returns (bool) {
     require(msg.sender == business);
     require(now > duedateTimestamp, "Can only claim if contract is due");
+    require(address(this).balance < amount, "Can only claim on breach of contract");
     selfdestruct(business);
     return true;
   }
