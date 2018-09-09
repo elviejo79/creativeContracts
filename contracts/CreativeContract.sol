@@ -2,6 +2,8 @@ pragma solidity ^0.4.24;
 
 contract CreativeContract {
 
+  // TODO Extract handling due and settlement dates in modifiers
+
   // Dates (unix timestamp)
   uint256 settlementTimestamp;
   uint256 duedateTimestamp;
@@ -55,9 +57,12 @@ contract CreativeContract {
   function cancel() public returns (bool) {
     // TODO When a contract can be canceled?
 
-    // call by both the owner and the customer
-    // if cancelIntent contains both business and customer's addresses?
-    // // destroy contract
+    require(msg.sender == business || msg.sender == customer);
+    cancelIntent[msg.sender] = true;
+
+    if (cancelIntent[business] && cancelIntent[customer]) {
+      selfdestruct(business);
+    }
   }
 
   function settle() public returns (bool) {
@@ -76,33 +81,43 @@ contract CreativeContract {
   }
 
   function rebate() public returns (bool) {
-    // require balance is at least the oracle fee
+    require(address(this).balance >= oracleFee, "Need to fund the contract first");
+    require(msg.sender == customer || msg.sender == business);
+    require(now > settlementTimestamp, "Can rebate only settled contracts");
 
-    // if msg.sender == customer
-    // // register customer rebate intent
-    // // return
-
-    // else msg.sender == oracle
-    // // require rebateIntent contains customer
-    // // require now > settlementTimestamp (contract settlement date has passed)
-    // // send fee to oracle
-    // // send balance to customer
-    // // destroy contract
+    if (msg.sender == customer) {
+      rebateIntent[customer] = true;
+      return false;
+    } else if (msg.sender == oracle) {
+      require(rebateIntent[customer], "Customer doesn't want rebate");
+      oracle.transfer(oracleFee);
+      selfdestruct(customer);  // TODO Or customer.transfer(amount - oracleFee) ?
+    }
   }
 
   function fund() public payable {
     // TODO Anyone can fund the contract?
 
-    // require balance < amount  (contract hasn't been fully paid)
-    // require msg.value <= amount - balance (can't send more than what's left)
-    // require now < duedateTimestamp (due date is still in the future)
+    uint256 balance = address(this).balance;
+    uint256 debt = amount - balance; // TODO Use safe math
+    require(balance < amount, "Contract is already fully paid");
+    require(msg.value <= debt, "Can't over paid the contract");
 
-    // if balance == 0: require msg.value >= oracleFee (at least the oracle fee is covered)
+    if (now > duedateTimestamp) {  // Contract is due
+      // call claim()
+    } else {
+      if (balance == 0) { // Is the first payment?
+        require(msg.value >= oracleFee, "Need to cover at least oracle expenses");
+      }
+
+      // Blockchain handles the money
+    }
   }
 
   function claim() public returns (bool) {
-    // call by owner
-    // require now > duedateTimestamp (pay day is due)
-    // destroy contract
+    require(msg.sender == business);
+    require(now > duedateTimestamp, "Can only claim if contract is due");
+    selfdestruct(business);
+    return true;
   }
 }
