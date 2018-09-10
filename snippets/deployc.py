@@ -3,15 +3,25 @@ import solc
 from web3 import Web3, HTTPProvider, TestRPCProvider
 from web3.contract import ConciseContract
 
+# web3.py instance
+ropsten_node = 'http://localhost:8545'
+w3 = Web3(HTTPProvider(ropsten_node))
 
-def main():
-    contract_source_code = ''.join(sys.stdin.readlines())
+
+def main(contract_source_code, private_key, passphrase):
     compiled_sol = solc.compile_source(contract_source_code)
     contract_interface = compiled_sol['<stdin>:CreativeContract']
 
-    # web3.py instance
-    ropsten_node = 'http://localhost:7545'
-    w3 = Web3(HTTPProvider(ropsten_node))
+    # Add a sample wallet with ropsten funds
+    w3.personal.importRawKey(private_key, passphrase)
+
+    # Unlock wallet to allow outgoing transactions
+    default_account = w3.eth.accounts[-1]  # Last added account
+    print('Will use account: ', default_account)
+    is_unlocked = w3.personal.unlockAccount(default_account, passphrase)
+    if not is_unlocked:
+        print("Can't use the account, deploy won't happen:", default_account)
+        exit()
 
     # Instantiate and deploy contract
     contract = w3.eth.contract(
@@ -35,7 +45,7 @@ def main():
                                    contract_settlement_ts, contract_duedate_ts,
                                    contract_delivery_ts).transact({
                                        'from':
-                                       w3.eth.accounts[0]
+                                       default_account
                                    })
 
     # Get tx receipt to get contract address
@@ -55,4 +65,26 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) != 4:
+        print(
+            'Usage: python deployc.py CreativeContract.sol <private key> <passphrase>'
+        )
+        exit()
+
+    contract_file_code = sys.argv[1]
+    private_key = sys.argv[2]
+    passphrase = sys.argv[3]
+
+    # Get source code from solidity file
+    source_code = ''
+    with open(contract_file_code, 'r') as f:
+        source_code = ''.join(f.readlines())
+
+    # Get private key from keystore file
+    # private_key = ''
+    # with open(user_keystore_file, 'r') as keyfile:
+    #     encrypted_key = keyfile.read()
+    #     private_key = w3.eth.account.decrypt(encrypted_key,
+    #                                          user_keystore_passphrase)
+
+    main(source_code, private_key, passphrase)
