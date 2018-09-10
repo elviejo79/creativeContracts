@@ -30,6 +30,9 @@
       When does the service needs to be fully paid.
 ***** Contract creation date
       Date of when the contract is made.
+***** Delivery date
+      When does products or result of service needs to be delivered. This is the
+      final date of the transaction.
 **** Other attributes
 ***** Amount
       Service cost for the customer to fully pay before the contract's due date.
