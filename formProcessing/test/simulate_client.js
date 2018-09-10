@@ -2,10 +2,10 @@
 
 const fetch = require("node-fetch");
 
-import {fetch} from 'wix-fetch';
-export function TrialRequest_beforeInsert(item, context) {
-    return create_pdf(item);
-}
+// import {fetch} from 'wix-fetch';
+// export function TrialRequest_beforeInsert(item, context) {
+//     return create_pdf(item);
+// }
 
 function create_pdf(item){
     const url_pdf_generator = 'https://creativecontracts.ngrok.io/contrato/new';
