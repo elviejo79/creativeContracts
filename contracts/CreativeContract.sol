@@ -7,6 +7,7 @@ contract CreativeContract {
   // Dates (unix timestamp)
   uint256 settlementTimestamp;
   uint256 duedateTimestamp;
+  uint256 deliveryTimestamp;
   // uint256 contractTimestamp; // handled by the blockchain
 
   uint256 amount;     // Price of the service
@@ -33,7 +34,8 @@ contract CreativeContract {
               string _lcUrl,
               bytes32 _lcHash,
               uint256 _settlementTs,
-              uint256 _dueTs
+              uint256 _dueTs,
+              uint256 _deliveryTs
               ) public {
     // Parties
     business = msg.sender;  // TODO Validate is not same as business or oracle
@@ -52,8 +54,10 @@ contract CreativeContract {
     // TODO Validate duedateTimestamp < settlementTimestamp
     settlementTimestamp = _settlementTs;
     duedateTimestamp = _dueTs;
+    deliveryTimestamp = _deliveryTs;
   }
 
+  // Both customer and business want to cancel the contract
   function cancel() public returns (bool) {
     // TODO When a contract can be canceled?
 
@@ -65,26 +69,28 @@ contract CreativeContract {
     }
   }
 
+  // Business demands the payment
   function settle() public returns (bool) {
     require(address(this).balance >= oracleFee, "Need to fund the contract first");
     require(msg.sender == customer || msg.sender == business);
-    require(now > settlementTimestamp, "Can't settle before contract's settlement date");
+    require(now > deliveryTimestamp, "Can't unlock funds before contract's delivery date");
 
     if (msg.sender == business) {
-        settleIntent[business] = true;
-        return false;
+      settleIntent[business] = true;
+      return false;
     } else if (msg.sender == oracle) {
-        require(settleIntent[business], "Business doesn't want settle");
-        oracle.transfer(oracleFee);
-        selfdestruct(business);  // TODO Or business.transfer(amount - oracleFee) ?
-        return true;
+      require(settleIntent[business], "Business doesn't want settle");
+      oracle.transfer(oracleFee);
+      selfdestruct(business);  // TODO Or business.transfer(amount - oracleFee) ?
+      return true;
     }
   }
 
+  // Customer demands a refund
   function rebate() public returns (bool) {
     require(address(this).balance >= oracleFee, "Need to fund the contract first");
     require(msg.sender == customer || msg.sender == oracle);
-    require(now > settlementTimestamp, "Can rebate only settled contracts");
+    require(now > deliveryTimestamp, "Can refund only delivered contracts");
 
     if (msg.sender == customer) {
       rebateIntent[customer] = true;
@@ -97,6 +103,7 @@ contract CreativeContract {
     }
   }
 
+  // Make a deposit to the contract
   function fund() public payable {
     // TODO Anyone can fund the contract?
 
@@ -116,6 +123,7 @@ contract CreativeContract {
     }
   }
 
+  // Business claim contract funds due to contract breach
   function claim() public returns (bool) {
     require(msg.sender == business);
     require(now > duedateTimestamp, "Can only claim if contract is due");
@@ -125,6 +133,6 @@ contract CreativeContract {
   }
 
   function debt() public view returns (uint256) {
-      return amount - address(this).balance;
+    return amount - address(this).balance;
   }
 }
