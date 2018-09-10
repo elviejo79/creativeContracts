@@ -4,8 +4,9 @@ from flask import request
 import pprint
 from weasyprint import HTML
 import hashlib
+import json
 
-app = Flask(__name__,static_url_path='/static')
+app = Flask(__name__, static_url_path='/static')
 
 
 @app.route('/')
@@ -49,9 +50,11 @@ def contrato_new():
     event_data = request.get_json()
     contract_in_html = render_template('CONTRATO.html', e=event_data)
     contract_in_pdf = HTML(string=contract_in_html).write_pdf()
-    contract_filename = hashlib.sha256(contract_in_pdf).hexdigest()
-    #contract_filename = 'hola_mundo'
-    contract_uri = "/tmp/%s.pdf" % contract_filename
-    filehandler = open(contract_uri, "wb")
+    contract_hash = hashlib.sha256(contract_in_pdf).hexdigest()
+    # contract_filename = 'hola_mundo'
+    contract_path = "./static/contratos/%s.pdf" % contract_hash
+    filehandler = open(contract_path, "wb")
     filehandler.write(contract_in_pdf)
-    return contract_uri
+    contract_info = {'legalContractUrl': "%sstatic/contratos/%s.pdf" % (request.host_url, contract_hash),
+                     'legalContractHash': contract_hash}
+    return json.dumps(contract_info)
