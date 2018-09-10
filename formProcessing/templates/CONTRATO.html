@@ -8,21 +8,21 @@
     <p class="c16"><span class="c8">ESPECIFICACIONES DEL EVENTO:</span></p>
     <p class="c1 c7"><span class="c2"></span></p>
     <p class="c1 c7"><span class="c6"></span></p>
-    <p class="c1"><span class="c6">FECHA DEL EVENTO: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ e['FechaEvento'] }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></p>
+    <p class="c1"><span class="c6">FECHA DEL EVENTO: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ e['settlementDate'] }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></p>
     <p class="c1 c7"><span class="c6"></span></p>
     <p class="c1"><span class="c6">DATOS DE CONTACTO</span></p>
     <p class="c1 c7"><span class="c6"></span></p>
-    <p class="c1 c13"><span class="c6">NOMBRE:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ e['Cliente'] }}L&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></p>
+    <p class="c1 c13"><span class="c6">NOMBRE:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ e["customerName"] }}L&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></p>
     <p class="c1 c7 c13"><span class="c6"></span></p>
-    <p class="c1 c13"><span class="c6">NOVIOS: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ e['tipoEvento']}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></p>
+    <p class="c1 c13"><span class="c6">NOVIOS: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ e["eventName"]}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></p>
     <p class="c1 c13 c7"><span class="c6"></span></p>
-    <p class="c1 c13"><span class="c6">TEL&Eacute;FONO:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="c2">{{ e['email']}}</span></p>
+    <p class="c1 c13"><span class="c6">TEL&Eacute;FONO:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="c2">{{e["customerTelephone"]}}</span></p>
     <p class="c1 c13 c7"><span class="c6"></span></p>
-    <p class="c1 c13"><span class="c6">DOMICILIO: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="c5">Morelos 728 A Centro Zacatecas, Zacatecas</span></p>
+    <p class="c1 c13"><span class="c6">DOMICILIO: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="c5">{{e["customerHomeAddress"]}}</span></p>
     <p class="c1"><span class="c8">&nbsp;</span></p>
     <p class="c1 c7"><span class="c8"></span></p>
     <p class="c1"><span class="c2">DETALLES DEL EVENTO:</span></p>
-    <p class="c1 c7"><span class="c8"></span></p>
+    <p class="c1 c7"><span class="c8">{{e["eventDetails"]}}</span></p>
     <a id="t.462814704e61d0f0b88ddec630dc0544bb2a2bfb"></a>
     <a id="t.0"></a>
     <table class="c23">
@@ -34,19 +34,13 @@
                 <td class="c30" colspan="1" rowspan="1">
                     <p class="c1"><span class="c0">HORA</span></p>
                 </td>
-                <td class="c28" colspan="1" rowspan="1">
-                    <p class="c1"><span class="c0">LUGAR</span></p>
-                </td>
             </tr>
             <tr class="c24">
                 <td class="c12" colspan="1" rowspan="1">
-                    <p class="c1"><span class="c0">{{e['tipoEvento']}}</span></p>
+                    <p class="c1"><span class="c0">{{e["eventType"]}}</span></p>
                 </td>
                 <td class="c27" colspan="1" rowspan="1">
-                    <p class="c1"><span class="c0">{{e['FechaEvento']}}</span></p>
-                </td>
-                <td class="c31" colspan="1" rowspan="1">
-                    <p class="c1"><span class="c0">{{e['tipoEvento']}}</span></p>
+                    <p class="c1"><span class="c0">{{e["settlementDate"]}}</span></p>
                 </td>
             </tr>
         </tbody>
@@ -67,7 +61,7 @@
     <p class="c1"><span class="c2">15:00 A 16:00 HRS</span></p>
     <p class="c1 c7"><span class="c17"></span></p>
     <p class="c19"><span class="c6">TARIFA FINAL DE SERVICIOS CONTRATADOS: </span><span class="c17">&nbsp;</span></p>
-    <p class="c19"><span class="c17">$5,000.00 (CINCO MIL PESOS 00/100 MN)</span></p>
+    <p class="c19"><span class="c17">{{e["amount"]}}</span></p>
     <p class="c19 c7"><span class="c17"></span></p>
     <p class="c19"><span style="overflow: hidden; display: inline-block; margin: 0.00px 0.00px; border: 0.00px solid #000000; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px); width: 177.84px; height: 163.87px;"><img alt="" src="{% include './image1.base64' %}" style="width: 177.84px; height: 163.87px; margin-left: 0.00px; margin-top: 0.00px; transform: rotate(0.00rad) translateZ(0px); -webkit-transform: rotate(0.00rad) translateZ(0px);" title=""></span></p>
     <p class="c7 c19"><span class="c17"></span></p>
@@ -77,7 +71,7 @@
     <p class="c19 c7"><span class="c17"></span></p>
     <p class="c16 c7"><span class="c17"></span></p>
     <p class="c7 c16"><span class="c17"></span></p>
-    <p class="c16"><span class="c17">CARLOS L&Oacute;PEZ DE LARA &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; YADIRA HERNANDEZ VIGIL &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</span></p>
+    <p class="c16"><span class="c17">CARLOS L&Oacute;PEZ DE LARA &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; {{e["customerName"]}} &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</span></p>
     <p class="c16 c7"><span class="c11"></span></p>
     <p class="c16 c7"><span class="c11"></span></p>
     <p class="c16 c7"><span class="c11"></span></p>
