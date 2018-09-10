@@ -26,15 +26,17 @@ def main():
     oracle_fee = 1
     lcurl = "http://www.creativecontract.org"
     lchash = "B221D9DBB083A7F33428D7C2A3C3198AE925614D70210E28716CCAA7CD4DDB79"
-    contract_settlement_ts = 1545384600000
     contract_duedate_ts = 1544779800000
+    contract_settlement_ts = 1545384600000
+    contract_delivery_ts = 1546384600000
 
-    tx_hash = contract.constructor(
-        customer_address, oracle_address, contract_amount, oracle_fee, lcurl,
-        lchash, contract_settlement_ts, contract_duedate_ts).transact({
-            'from':
-            w3.eth.accounts[0]
-        })
+    tx_hash = contract.constructor(customer_address, oracle_address,
+                                   contract_amount, oracle_fee, lcurl, lchash,
+                                   contract_settlement_ts, contract_duedate_ts,
+                                   contract_delivery_ts).transact({
+                                       'from':
+                                       w3.eth.accounts[0]
+                                   })
 
     # Get tx receipt to get contract address
     tx_receipt = w3.eth.getTransactionReceipt(tx_hash)
