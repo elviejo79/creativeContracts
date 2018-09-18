@@ -2,6 +2,7 @@ import sys
 import solc
 from web3 import Web3, HTTPProvider, TestRPCProvider
 from web3.contract import ConciseContract
+from eth_account import Account
 
 # web3.py instance
 ropsten_node = 'http://localhost:8545'
@@ -12,11 +13,15 @@ def main(contract_source_code, private_key, passphrase):
     compiled_sol = solc.compile_source(contract_source_code)
     contract_interface = compiled_sol['<stdin>:CreativeContract']
 
-    # Add a sample wallet with ropsten funds
-    w3.personal.importRawKey(private_key, passphrase)
+    # Check if address exists
+    public_key = Account.privateKeyToAccount(private_key).address
+
+    if pk not in w3.eth.accounts:
+        # Add a sample wallet with ropsten funds
+        w3.personal.importRawKey(private_key, passphrase)
 
     # Unlock wallet to allow outgoing transactions
-    default_account = w3.eth.accounts[-1]  # Last added account
+    default_account = pk
     print('Will use account: ', default_account)
     is_unlocked = w3.personal.unlockAccount(default_account, passphrase)
     if not is_unlocked:
