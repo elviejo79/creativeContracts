@@ -16,12 +16,12 @@ def main(contract_source_code, private_key, passphrase):
     # Check if address exists
     public_key = Account.privateKeyToAccount(private_key).address
 
-    if pk not in w3.eth.accounts:
+    if public_key not in w3.eth.accounts:
         # Add a sample wallet with ropsten funds
         w3.personal.importRawKey(private_key, passphrase)
 
     # Unlock wallet to allow outgoing transactions
-    default_account = pk
+    default_account = public_key
     print('Will use account: ', default_account)
     is_unlocked = w3.personal.unlockAccount(default_account, passphrase)
     if not is_unlocked:
