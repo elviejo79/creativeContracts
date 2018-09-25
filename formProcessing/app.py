@@ -55,6 +55,19 @@ def contrato_new():
     contract_path = "./static/contratos/%s.pdf" % contract_hash
     filehandler = open(contract_path, "wb")
     filehandler.write(contract_in_pdf)
-    contract_info = {'legalContractUrl': "%sstatic/contratos/%s.pdf" % (request.host_url, contract_hash),
-                     'legalContractHash': contract_hash}
+    contract_info = {
+        'legalContractUrl':
+        "%sstatic/contratos/%s.pdf" % (request.host_url, contract_hash),
+        'legalContractHash':
+        contract_hash
+    }
+    # TODO Create async function that waits for the contract address and
+    #      doesn't stop flask, pass the contract_hash to identify the related PDF.
+    # Use Celery: https://stackoverflow.com/a/31867108/2948807
     return json.dumps(contract_info)
+
+
+# TODO Create another controller for receiving the address
+#      This controller should generate a new PDF with the contract address in a
+#      QR and save it into a folder with the same HASH name of the old PDF. So
+#      wix can search for them in a specified link.
