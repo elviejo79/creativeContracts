@@ -5,7 +5,26 @@ from web3.middleware import geth_poa_middleware
 
 
 class SmartContract:
+    """ Simple client to handle contract deployment.
+
+    Attributes:
+        w3 (object): Instance of the web3 client.
+        default_account (str): Ethereum address to use for contract deployment.
+        contract_data (dict): Dict containing contract's constructor arguments.
+    """
+
     def __init__(self, node_uri, use_ipc=False, use_poa=False):
+        """ Create instance to interact with the contract deployer.
+
+        Args:
+            node_uri (str): Either the http address of an ethereum node or the
+                      path to the IPC file if 'use_ipc=True'.
+            use_ipc (bool): If True then 'node_uri' will be treated as a file
+                     path to the 'geth.ipc' file of the node to connect to.
+            use_poa (bool): If True then it will inject 'geth_poa_middleware'
+                     to the web3 instance. When 'node_uri' refers to a Rinkeby
+                     node then this needs to be set to True.
+        """
         if use_ipc:
             provider = IPCProvider(node_uri)
         else:
@@ -20,6 +39,17 @@ class SmartContract:
             self.w3.middleware_stack.inject(geth_poa_middleware, layer=0)
 
     def validate_to_checksum(self, address):
+        """ Validate given Ethereum address and change to checksum version.
+
+        Args:
+             address (str): Ethereum address to validate.
+
+        Returns:
+             str: The checksum address ensured to be valid.
+
+        Raises:
+            ValueError: If the given address is not a valid Ethereum address.
+        """
         if not Web3.isAddress(address):
             raise ValueError('Not a valid account address: ' + address)
 
@@ -29,6 +59,19 @@ class SmartContract:
         return address
 
     def validate_contract_data(self, contract_data):
+        """ Validate contract's constructor data.
+
+        Args:
+            contract_data (dict): Dict containing contract's constructor
+                arguments.
+
+        Returns:
+            bool: True if data is valid.
+
+        Raises:
+            AttributeError: If 'contract_data' is missing a field needed for
+                the contract deployment.
+        """
         missing_attributes = []
 
         # Validate expected attributes are pressent
@@ -65,6 +108,29 @@ class SmartContract:
         return True
 
     def set_contract_data(self, **kwargs):
+        """ Fill contract's constructor arguments to deploy.
+
+        Args:
+            customer_address (str): Customer's Ethereum address.
+            oracle_address (str): Oracle's Ethereum address.
+            contract_amount (int): Amount to be paid to the contract.
+            oracle_fee (int): Fee to be paid to the Oracle for its validation
+                services.
+            lcurl (str): Legal contract URL where a textual representation of
+                the contract exists.
+            lchash (str): Hash SHA256 of the legal contract document to ensure
+                textual representation of the contract hasn't been tampered.
+            contract_duedate_ts (int): Contract's due date in UNIX timestamp
+                format.
+            contract_settlement_ts (int): Contract's settlement date in UNIX
+                timestamp format.
+            contract_delivery_ts (int): Contract's delivery date in UNIX
+                timestamp format.
+
+        Raises:
+            AttributeError: If 'contract_data' is missing a field needed for
+                the contract deployment.
+        """
         self.validate_contract_data(
             kwargs)  # Raise exception with missing values
 
@@ -88,9 +154,34 @@ class SmartContract:
         self.contract_data = kwargs
 
     def set_deployment_account(self, public_key):
+        """ Configure Ethereum address to be used for contract deployment.
+
+        Args:
+             public_key (str): Ethereum address to use for contract deployment.
+
+        Raises:
+            ValueError: If the given address is not a valid Ethereum address.
+        """
         self.default_account = self.validate_to_checksum(public_key)
 
     def import_account(self, private_key, passphrase, as_default=True):
+        """ Import account to the Ethereum node to sign contract deployment.
+
+        Args:
+            private_key (str): Ethereum private key to import to the configured
+                node.
+            passphrase (str): Passphrase used to protect the private_key.
+            as_default (bool): If True the imported account will be set as the
+                default account used to deploy the contract.
+
+        Returns:
+            str: The corresponding public key, that is the Ethereum address
+                 matching to the given private key.
+
+        Raises:
+            ValueError: If the corresponding public address is not a valid
+                Ethereum address.
+        """
         # Check if address exists
         public_key = Account.privateKeyToAccount(private_key).address
 
@@ -106,7 +197,8 @@ class SmartContract:
         is_unlocked = self.w3.personal.unlockAccount(default_account,
                                                      passphrase)
         if not is_unlocked:
-            # TODO Use the flask app's logger instead of print to stdout directly
+            # TODO Use the flask app's logger instead of print to stdout
+            # directly
             print("Can't use the account, deploy won't happen:",
                   default_account)
             return None
@@ -117,6 +209,25 @@ class SmartContract:
         return public_key
 
     def deploy_compiled(self, abi, bytecode):
+        """ Deploy the given contract's ABI and Bytecode.
+
+        Note this function blocks the thread, since it waits for the block
+        containing the deployment transaction to be mined befor returning. So
+        is not a good idea to call it in the main thread.
+
+        Args:
+            abi (str): The contract's ABI to deploy.
+            bytecode (str): The contract's Bytecode to deploy.
+
+        Raises:
+            ValueError: If the contract data or default account neede for
+                deployment have not been set. Need to call
+                "set_deployment_account" and "set_contract_data" functions
+                first.
+
+        Returns:
+            str: The deployed contract's Ethereum address.
+        """
         if not (self.default_account and self.contract_data):
             raise ValueError(
                 'Set up account and contract data before deploying')
@@ -142,6 +253,25 @@ class SmartContract:
         return tx_receipt['contractAddress']  # Return contract address
 
     def deploy(self, contract_name, contract_source_code):
+        """ Deploy the contract given the name and the source code.
+
+        Note this function blocks the thread, since it waits for the block
+        containing the deployment transaction to be mined befor returning. So
+        is not a good idea to call it in the main thread.
+
+        Args:
+            contract_name (str): The contract's name.
+            contract_source_code (str): The contract's plain source code.
+
+        Raises:
+            ValueError: If the contract data or default account neede for
+                deployment have not been set. Need to call
+                "set_deployment_account" and "set_contract_data" functions
+                first.
+
+        Returns:
+            str: The deployed contract's Ethereum address.
+        """
         if not (self.default_account and self.contract_data):
             raise ValueError(
                 'Set up account and contract data before deploying')
