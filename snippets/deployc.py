@@ -1,16 +1,20 @@
 import sys
 import solc
-from web3 import Web3, HTTPProvider, TestRPCProvider
-from web3.contract import ConciseContract
+from web3 import Web3, HTTPProvider, IPCProvider
 from eth_account import Account
+from web3.middleware import geth_poa_middleware
 
 # web3.py instance
-ropsten_node = 'http://localhost:8545'
-w3 = Web3(HTTPProvider(ropsten_node))
+ethereum_node = 'http://localhost:8545'
+ethereum_ipc = '/Users/antares/Library/Ethereum/geth.ipc'
+# provider = HTTPProvider(ethereum_node)
+provider = IPCProvider(ethereum_ipc)
+w3 = Web3(provider)
+w3.middleware_stack.inject(geth_poa_middleware, layer=0)  # Needed for PoA
 
 
 def main(contract_source_code, private_key, passphrase):
-    compiled_sol = solc.compile_source(contract_source_code)
+    compiled_sol = solc.compile_source(contract_source_code, optimize=True)
     contract_interface = compiled_sol['<stdin>:CreativeContract']
 
     # Check if address exists
@@ -55,6 +59,7 @@ def main(contract_source_code, private_key, passphrase):
 
     # Get tx receipt to get contract address
     tx_receipt = w3.eth.getTransactionReceipt(tx_hash)
+    # TODO: TypeError: 'NoneType' object is not subscriptable: contract_address = tx_receipt['contractAddress']
     contract_address = tx_receipt['contractAddress']
 
     # Contract instance in concise mode
