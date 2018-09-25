@@ -76,3 +76,5 @@ El proyecto en vivo: https://www.creativecontracts.org/
 **** Query debt
      A simple function to retrieve the amount the customer needs to pay before
      the contract's due date.
+** Technical documentation
+   See [[./CONTRIBUTING.org][CONTRIBUTING.org]] for details.

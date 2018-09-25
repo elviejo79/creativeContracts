@@ -1,0 +1,157 @@
+* Environment setup
+
+Testing environment is:
+
+  - Ubuntu 18.04 LTS
+  - Python 3.7
+  - Latest ~solc~ compiler installed.
+  - All ~requirements.txt~ + ~py-solc~, ~web3~.
+
+** Instructions
+*** Ubuntu 18.04 (Vagrant)
+    Requires Vagrant and a supported provider installed (such as VirtualBox).
+
+    #+begin_src shell
+    vagrant init ubuntu/bionic64
+    #+end_src
+
+    #+begin_src shell
+    vagrant up
+    #+end_src
+*** Install system level dependencies
+    Update the packages index.
+    #+begin_src shell
+    sudo apt-get update
+    #+end_src
+
+    Install build tools and git.
+    #+begin_src shell
+    sudo apt-get install build-essential git
+    #+end_src
+*** Download source code
+    Choose a folder in the system, it could be the user's home folder
+    (~/home/vagrant~) and ~cd~ into it.
+    #+begin_src shell
+    cd ~/home/vagrant/
+    #+end_src
+
+    Clone the repo:
+    #+begin_src shell
+    git clone git@github.com:elviejo79/creativeContracts.git
+    #+end_src
+
+    Enter to the project folder:
+    #+begin_src shell
+    cd creativeContracts/
+    #+end_src
+
+*** Python 3.7
+    Will use ~pyenv~ to install use latest python without affecting existing
+    installations. These steps could be outdated, better [[https://github.com/pyenv/pyenv-installer][follow these instructions]].
+
+**** Install pyenv
+     Installation script:
+     #+begin_src shell
+     curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
+     #+end_src
+
+     #+begin_src shell
+     pyenv update
+     #+end_src
+
+     Verify these lines exist in the ~.bashrc~ file:
+     #+begin_src shell
+     export PATH="~/.pyenv/bin:$PATH"
+     eval "$(pyenv init -)"
+     eval "$(pyenv virtualenv-init -)"
+     #+end_src
+
+**** Install and activate python 3.7 using pyenv
+     #+begin_src shell
+     pyenv install 3.7.0
+     #+end_src
+
+     Use Python 3.7 as a local version in the project folder, so this command
+     needs to be executed inside the cloned project folder.
+     #+begin_src shell
+     pyenv local 3.7.0
+     #+end_src
+
+     Verify correct python version is used:
+     #+begin_src shell
+     python --version  # Python 3.7.0
+     #+end_src
+*** Install project level dependencies
+    Better execute these commands inside the project folder (specifically the
+    ~pip~ ones).
+
+**** Prototype dependencies
+     Prototype dependencies:
+
+     Add the ~ethereum/ethereum~ PPA:
+     #+begin_src shell
+     sudo add-apt-repository -y ppa:ethereum/ethereum
+     #+end_src
+
+     Update package index
+     #+begin_src shell
+     sudo apt-get update
+     #+end_src
+
+     Install both ~geth~ (ethereum node) and ~solc~ (the solidity compiler) with:
+     #+begin_src shell
+     sudo apt-get install ethereum solc
+     #+end_src
+
+     Install Python bindings
+     #+begin_src shell
+     pip install py-solc web3
+     #+end_src
+
+**** Application dependencies
+     Application dependencies are in the ~formProcessing~ folder, so ~cd~ into
+     it and then run:
+     #+begin_src shell
+     pip install -r requirements.txt
+     #+end_src
+
+** Run a local ethereum node
+   The node should be capable to sign and broadcast transactions. For prototype
+   testing purposes we use the ~rinkeby~ test network since it's easier to
+   obtain free ether.
+
+   #+begin_src shell
+   geth --rinkeby --syncmode="fast" --rpc --rpcapi eth,web3,personal
+   #+end_src
+** Testing the contract deployment code
+   Run the ~deployc.py~ script:
+
+   Set Pkwy of wallet used to deploy the contract (this is insecure and is just
+   for prototype testing purposes, in reality all this happens in the user
+   device without us accessing any user key).
+   #+begin_src shell
+   export CC_USER_PKEY=10ac8d7l0ac41ap1fb5f19ae4f7bah61300e117907e1btbf544475b1c3bc6b60
+   export CC_USER_PASS=WalletPassPhrase
+   #+end_src
+
+   This will allow the node to import and deploy the contract. Run the script as follows:
+   #+begin_src shell
+   python deployc.py ../contracts/CreativeContract.sol $CC_USER_PKEY $CC_USER_PASS
+   #+end_src
+
+   *Note*: The walled used has to have sufficient funds for this to work.
+** Getting free ether for development
+   Follow [[https://gist.github.com/cryptogoth/10a98e8078cfd69f7ca892ddbdcf26bc][these instructions]].
+
+   And use [[https://faucet.rinkeby.io/][~faucet.rinkeby.io~]] to get free test ether by using a dummy social
+   network account.
+** Running the web application
+   The web application lives in the ~formProcessing~.
+   #+begin_src shell
+   cd formProcessing/
+   #+end_src
+
+   #+begin_src shell
+   export FLASK_APP=app.py
+   flask run
+   #+end_src
