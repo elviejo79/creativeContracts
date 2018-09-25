@@ -66,7 +66,24 @@ def postjson():
 
 @app.route('/contrato/new', methods=['POST'])
 def contrato_new():
+    """ Creates a contract in PDF and deploys a SmartContract to EVM.
+
+    Request Data:
+        amount: Amount to pay for the service.
+        settlementDate: Date of settlement of the contract.
+        ETHCliente: ETH Address of the customer requiring the service.
+        customerName: Name of the business.
+        eventName: Name of the event
+        customerTelephone: Self explanatory.
+        customerHomeAddress: Self explanatory.
+        eventDetails: Self explanatory.
+        eventType: Categorization of the event.
+        Cliente: Customer name receiving the service.
+        email: Customer email.
+    """
     event_data = request.get_json()
+
+    # PDF Generation
     contract_in_html = render_template('CONTRATO.html', e=event_data)
     contract_in_pdf = HTML(string=contract_in_html).write_pdf()
     contract_hash = hashlib.sha256(contract_in_pdf).hexdigest()
@@ -80,13 +97,22 @@ def contrato_new():
         'legalContractHash':
         contract_hash
     }
-    # TODO Create async function that waits for the contract address and
-    #      doesn't stop flask, pass the contract_hash to identify the related PDF.
-    # Use Celery: https://stackoverflow.com/a/31867108/2948807
+
+    # Smart Contract Generation
+    # TODO Some parameters are not in the 'event_data'
+    constructor_arguments = {
+        'customer_address': event_data['ETHCliente'],
+        'oracle_address': event_data['ETHOracle'],  # TODO Missing on Wix
+        'contract_amount': event_data['amount'],
+        'oracle_fee': event_data['oracleFee'],  # TODO Missing on Wix
+        'lcurl': contract_info['legalContractUrl'],
+        'lchash': contract_hash,
+        'contract_duedate_ts': event_data['dueDate'],  # TODO Missing on Wix
+        'contract_settlement_ts': event_data['settlementDate'],
+        'contract_delivery_ts':
+        event_data['deliveryDate'],  # TODO Missing on Wix
+    }
+
+    deploy_new_contract.delay(contract_hash, constructor_arguments)  # async
+
     return json.dumps(contract_info)
-
-
-# TODO Create another controller for receiving the address
-#      This controller should generate a new PDF with the contract address in a
-#      QR and save it into a folder with the same HASH name of the old PDF. So
-#      wix can search for them in a specified link.
