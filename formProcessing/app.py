@@ -44,16 +44,15 @@ def deploy_new_contract(contract_hash, contract_url, event_details):
     # TODO Some parameters are not in the 'event_data'
     # TODO Validate convert dates
     constructor_arguments = {
-        'customer_address': event_details['ETHCliente'],
-        'oracle_address': event_details['ETHOracle'],  # TODO Missing on Wix
+        'customer_address': event_details['customerAddress'],
+        'oracle_address': event_details['oracleAddress'],
         'contract_amount': event_details['amount'],
-        'oracle_fee': event_details['oracleFee'],  # TODO Missing on Wix
+        'oracle_fee': event_details['oracleFee'],
         'lcurl': contract_url,
         'lchash': contract_hash,
-        'contract_duedate_ts': event_details['dueDate'],  # TODO Missing on Wix
+        'contract_duedate_ts': event_details['dueDate'],
         'contract_settlement_ts': event_details['settlementDate'],
-        'contract_delivery_ts':
-        event_details['deliveryDate'],  # TODO Missing on Wix
+        'contract_delivery_ts': event_details['dateOfDelivery'],
     }
 
     sc.set_contract_data(constructor_arguments)
@@ -111,21 +110,6 @@ def postjson():
 
 @app.route('/contrato/new', methods=['POST'])
 def contrato_new():
-    """ Creates a contract in PDF and deploys a SmartContract to EVM.
-
-    Request Data:
-        amount: Amount to pay for the service.
-        settlementDate: Date of settlement of the contract.
-        ETHCliente: ETH Address of the customer requiring the service.
-        customerName: Name of the business.
-        eventName: Name of the event
-        customerTelephone: Self explanatory.
-        customerHomeAddress: Self explanatory.
-        eventDetails: Self explanatory.
-        eventType: Categorization of the event.
-        Cliente: Customer name receiving the service.
-        email: Customer email.
-    """
     event_data = request.get_json()
 
     # PDF Generation
