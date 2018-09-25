@@ -272,6 +272,10 @@ class SmartContract:
         Returns:
             str: The deployed contract's Ethereum address.
         """
+        # TODO Use an extra flag parameter to know if should loop after
+        # TimeExhausted is raised, so it can wait infinitely for the
+        # transaction to be mined?
+
         if not (self.default_account and self.contract_data):
             raise ValueError(
                 'Set up account and contract data before deploying')

@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from flask import render_template
 from flask import request
@@ -7,6 +8,24 @@ import hashlib
 import json
 
 app = Flask(__name__, static_url_path='/static')
+app.config.update(
+    # Celery will use the broker as a task queue
+    CELERY_BROKER_URL='redis://localhost:6379',
+    CELERY_RESULT_BACKEND='redis://localhost:6379',
+
+    # Options to connect to the Ethereum node used for deployment
+    GETH_NODE_URI=os.getenv('GETH_NODE_URI', 'http://localhost:8565'),
+    GETH_USES_IPC=False,
+    GETH_USES_POA=False,
+
+    # User account used to sign and deploy the contract
+    ETH_USER_PKEY=os.environ['ETH_USER_PKEY'],
+    ETH_USER_PASS=os.environ['ETH_USER_PASS'],
+
+    # Contract name and file path to the contract's solidity file
+    CREATIVE_CONTRACT_NAME=os.getenv('CC_NAME', 'CreativeContract'),
+    CREATIVE_CONTRACT_FILE=os.getenv('CC_FILE',
+                                     '../contracts/CreativeContract.sol'))
 
 
 @app.route('/')
