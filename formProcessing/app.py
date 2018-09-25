@@ -4,7 +4,9 @@ import pprint
 from flask import Flask
 from flask import render_template
 from flask import request
+from weasyprint import HTML
 from utils import make_celery, generate_pdf
+from smartcontract import SmartContract
 
 app = Flask(__name__, static_url_path='/static')
 app.config.update(
@@ -28,6 +30,47 @@ app.config.update(
 
 celery = make_celery(app)
 
+
+@celery.task()
+def deploy_new_contract(contract_hash, contract_url, event_details):
+    sc = SmartContract(celery.conf['GETH_NODE_URI'],
+                       celery.conf['GETH_USES_IPC'],
+                       celery.conf['GETH_USES_POA'])
+
+    sc.import_account(celery.conf['ETH_USER_PKEY'],
+                      celery.conf['ETH_USER_PASS'])
+
+    # TODO: Generate a new PDF with a QR code of the 'contract_address'
+    # TODO Some parameters are not in the 'event_data'
+    # TODO Validate convert dates
+    constructor_arguments = {
+        'customer_address': event_details['ETHCliente'],
+        'oracle_address': event_details['ETHOracle'],  # TODO Missing on Wix
+        'contract_amount': event_details['amount'],
+        'oracle_fee': event_details['oracleFee'],  # TODO Missing on Wix
+        'lcurl': contract_url,
+        'lchash': contract_hash,
+        'contract_duedate_ts': event_details['dueDate'],  # TODO Missing on Wix
+        'contract_settlement_ts': event_details['settlementDate'],
+        'contract_delivery_ts':
+        event_details['deliveryDate'],  # TODO Missing on Wix
+    }
+
+    sc.set_contract_data(constructor_arguments)
+
+    # This will block until transaction is mined (default timeout is 120s)
+    contract_address = sc.deploy(celery.conf['CREATIVE_CONTRACT_NAME'],
+                                 celery.conf['CREATIVE_CONTRACT_FILE'])
+
+    # PDF Generation
+    event_details['ETHContractAddress'] = contract_address
+
+    # TODO Should the 'contract_address' be part of the file name?
+    contract_in_html = render_template('CONTRATO.html', e=event_details)
+    contract_in_pdf = HTML(string=contract_in_html).write_pdf()
+    contract_path = "./static/contratos/%s_deployed.pdf" % contract_hash
+    filehandler = open(contract_path, "wb")
+    filehandler.write(contract_in_pdf)
 
 
 @app.route('/')
