@@ -1,11 +1,10 @@
 import os
+import json
+import pprint
 from flask import Flask
 from flask import render_template
 from flask import request
-import pprint
-from weasyprint import HTML
-import hashlib
-import json
+from utils import make_celery, generate_pdf
 
 app = Flask(__name__, static_url_path='/static')
 app.config.update(
@@ -26,6 +25,9 @@ app.config.update(
     CREATIVE_CONTRACT_NAME=os.getenv('CC_NAME', 'CreativeContract'),
     CREATIVE_CONTRACT_FILE=os.getenv('CC_FILE',
                                      '../contracts/CreativeContract.sol'))
+
+celery = make_celery(app)
+
 
 
 @app.route('/')
@@ -84,35 +86,15 @@ def contrato_new():
     event_data = request.get_json()
 
     # PDF Generation
-    contract_in_html = render_template('CONTRATO.html', e=event_data)
-    contract_in_pdf = HTML(string=contract_in_html).write_pdf()
-    contract_hash = hashlib.sha256(contract_in_pdf).hexdigest()
-    # contract_filename = 'hola_mundo'
-    contract_path = "./static/contratos/%s.pdf" % contract_hash
-    filehandler = open(contract_path, "wb")
-    filehandler.write(contract_in_pdf)
-    contract_info = {
-        'legalContractUrl':
-        "%sstatic/contratos/%s.pdf" % (request.host_url, contract_hash),
-        'legalContractHash':
-        contract_hash
-    }
+    contract_hash = generate_pdf(event_data)
+    contract_url = "%sstatic/contratos/%s.pdf" % (request.host_url,
+                                                  contract_hash)
 
     # Smart Contract Generation
-    # TODO Some parameters are not in the 'event_data'
-    constructor_arguments = {
-        'customer_address': event_data['ETHCliente'],
-        'oracle_address': event_data['ETHOracle'],  # TODO Missing on Wix
-        'contract_amount': event_data['amount'],
-        'oracle_fee': event_data['oracleFee'],  # TODO Missing on Wix
-        'lcurl': contract_info['legalContractUrl'],
-        'lchash': contract_hash,
-        'contract_duedate_ts': event_data['dueDate'],  # TODO Missing on Wix
-        'contract_settlement_ts': event_data['settlementDate'],
-        'contract_delivery_ts':
-        event_data['deliveryDate'],  # TODO Missing on Wix
-    }
+    deploy_new_contract.delay(contract_hash, contract_url, event_data)  # async
 
-    deploy_new_contract.delay(contract_hash, constructor_arguments)  # async
-
-    return json.dumps(contract_info)
+    # TODO Should add the expected URL for the post-deployed contract PDF?
+    return json.dumps({
+        'legalContractUrl': contract_url,
+        'legalContractHash': contract_hash
+    })
