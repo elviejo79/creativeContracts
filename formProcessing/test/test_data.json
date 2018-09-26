@@ -21,10 +21,11 @@
     "eventName":"valor_default",
     "eventDetails":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus sit amet volutpat tellus. Fusce imperdiet lacus neque, sed tempor sem efficitur nec. Nam sagittis, lacus blandit commodo vulputate, quam quam finibus velit, id dapibus massa dui eget mauris. Nullam ac euismod elit. Phasellus ut sem erat. Donec dui erat, gravida quis varius eu, fringilla ut urna. Nulla eu odio laoreet, venenatis erat et, porttitor nisi. Duis ullamcorper dolor vulputate, feugiat eros eu, rutrum augue. Nulla scelerisque nisi nisl, eu lobortis augue posuere dictum. Nam non imperdiet sem. Etiam vulputate felis vel tortor rhoncus congue. Donec nulla ligula, sollicitudin vel felis at, viverra iaculis urna. In vitae turpis tellus.",
     "eventType":"valor_default",
-    "legalContractUrl":"valor_default",
+    "legalContractURL":"valor_default",
     "legalContractHash":"valor_default",
     "oracleAddress":"0xBa91E12c64E9cb670dBE5E52BBbe3a8462e48E3b",
     "oracleFee":1,
     "settlementDate":"2018-12-21 13:00:00",
-    "smartContractAddress":"valor_default"
+    "smartContractAddress":"valor_default",
+    "templeteDeContrato":"valor_default"
 }
