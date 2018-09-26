@@ -46,10 +46,11 @@ def deploy_new_contract(contract_hash, contract_url, event_details):
     # TODO Validate convert dates
 
     # Transform dates to unix timestamps
-    due_ts = dateparser.parse(event_details['dueDate']).timestamp()
-    settlement_ts = dateparser.parse(
-        event_details['settlementDate']).timestamp()
-    delivery_ts = dateparser.parse(event_details['dateOfDelivery']).timestamp()
+    due_ts = int(dateparser.parse(event_details['dueDate']).timestamp())
+    settlement_ts = int(
+        dateparser.parse(event_details['settlementDate']).timestamp())
+    delivery_ts = int(
+        dateparser.parse(event_details['dateOfDelivery']).timestamp())
 
     sc.set_contract_data(
         customer_address=event_details['customerAddress'],

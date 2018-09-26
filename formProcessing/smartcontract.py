@@ -1,7 +1,7 @@
 import solc
-from web3 import Web3, HTTPProvider, IPCProvider
+from web3 import Web3, HTTPProvider, IPCProvider, middleware
+from web3.gas_strategies.time_based import construct_time_based_gas_price_strategy
 from eth_account import Account
-from web3.middleware import geth_poa_middleware
 
 
 class SmartContract:
@@ -36,7 +36,21 @@ class SmartContract:
 
         if use_poa:
             # Needed only with PoA (Rinkeby)
-            self.w3.middleware_stack.inject(geth_poa_middleware, layer=0)
+            self.w3.middleware_stack.inject(
+                middleware.geth_poa_middleware, layer=0)
+
+        block_sample = 40
+        prob = 95  # Probability to be included
+        express_strategy = construct_time_based_gas_price_strategy(
+            30, block_sample, prob)
+
+        self.w3.eth.setGasPriceStrategy(express_strategy)
+        # Tries to make transactions faster (and more expensive?)
+        # self.w3.eth.setGasPriceStrategy(fast_gas_price_strategy)
+        self.w3.middleware_stack.add(middleware.time_based_cache_middleware)
+        self.w3.middleware_stack.add(
+            middleware.latest_block_based_cache_middleware)
+        self.w3.middleware_stack.add(middleware.simple_cache_middleware)
 
     def validate_to_checksum(self, address):
         """ Validate given Ethereum address and change to checksum version.
@@ -251,14 +265,17 @@ class SmartContract:
                 self.default_account
             })
 
-        # TODO Make async with: waitForTransactionReceipt
-        #      Default timeout: 120
-        # TODO Adjust the timeout using info from https://ethgasstation.info/
+        # TODO Return 'tx_hash' instead so other process could monitor the receipt
+        return tx_hash
 
         # Get tx receipt to get contract address
-        tx_receipt = self.w3.eth.waitForTransactionReceipt(tx_hash)
+        # tx_receipt = self.w3.eth.waitForTransactionReceipt(
+        #     tx_hash, timeout=300)
 
-        return tx_receipt['contractAddress']  # Return contract address
+        # print('\n\n======= TX RECEIPT ========')
+        # print(pprint.pformat(tx_receipt))
+
+        # return tx_receipt['contractAddress']  # Return contract address
 
     def deploy(self, contract_name, contract_source_code):
         """ Deploy the contract given the name and the source code.
