@@ -70,7 +70,7 @@ def deploy_new_contract(contract_hash, contract_url, event_details):
 
     # This will block until transaction is mined (default timeout is 120s)
     contract_address = sc.deploy(celery.conf['CREATIVE_CONTRACT_NAME'],
-                                 source_code)
+                                 source_code).hex()
 
     # PDF Generation
     event_details['ETHContractAddress'] = contract_address
@@ -81,6 +81,10 @@ def deploy_new_contract(contract_hash, contract_url, event_details):
     contract_path = "./static/contratos/%s_deployed.pdf" % contract_hash
     filehandler = open(contract_path, "wb")
     filehandler.write(contract_in_pdf)
+    print('\n\n======= GENERATED PDF =======')
+    print('Address ==> ', contract_address)
+    print('File    ==> ', contract_path)
+    print('=================================')
 
 
 @app.route('/')
