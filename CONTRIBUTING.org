@@ -115,6 +115,12 @@ Testing environment is:
      pip install -r requirements.txt
      #+end_src
 
+     In addition ~celery~ needs to be installed from ~master~ to be compatible
+     with Python 3.7 ([[https://github.com/celery/celery/issues/4849#issuecomment-404267206][see details]]):
+     #+begin_src shell
+     pip install --upgrade https://github.com/celery/celery/tarball/master
+     #+end_src
+
 ** Run a local ethereum node
    The node should be capable to sign and broadcast transactions. For prototype
    testing purposes we use the ~rinkeby~ test network since it's easier to
@@ -145,13 +151,62 @@ Testing environment is:
 
    And use [[https://faucet.rinkeby.io/][~faucet.rinkeby.io~]] to get free test ether by using a dummy social
    network account.
+** Configuring the web application
+   Besides all environment variables that ~flask~ accepts, the following
+   variables can be specified to alter the behaviour of the application.
+
+*** ~GETH_NODE_URI~
+    Address of the Etherum node to connect to and that it will be used for
+    signing the deployment transaction.
+
+    Possible values:
+    - ~/path/to/geth.ipc~
+    - ~http://nodeip:port/~
+
+*** ~GETH_USES_IPC~
+    Indicates whether the ~GET_NODE_URI~ refers to a http address (~False~) or
+    to a path to the ~geth.ipc~ file (~True~).
+
+*** ~GETH_USES_POA~
+    Indicates whether the ~GET_NODE_URI~ uses a network with Proof of Authority
+    as consensus mechanism if using Rinkeby this should be set to ~True~.
+
+*** ~CC_FILE~
+    File path to the smart contract source file (the ~.sol~ file).
+
+*** ~CC_NAME~
+    Name of the smart contract to deploy (as written in the source code after
+    the pragma).
+
+** Running celery
+   Celery is used to run asynchronous tasks, it needs to be started separately
+   because it runs in a separate process by itself. The celery configuration is
+   inherited from the flask configuration.
+   #+begin_src shell
+   export CC_USER_PKEY=10ac8d7l0ac41ap1fb5f19ae4f7bah61300e117907e1btbf544475b1c3bc6b60
+   export CC_USER_PASS=WalletPassPhrase
+   #+end_src
+
+   #+begin_src shell
+   celery -A app.celery worker
+   #+end_src
+
+   Execute the command within the same folder where the flask app is located.
+
 ** Running the web application
    The web application lives in the ~formProcessing~.
    #+begin_src shell
    cd formProcessing/
    #+end_src
 
+   Define the needed environment variables, these shown here are mandatory, for
+   others see the app configuration section above.
    #+begin_src shell
+   export CC_USER_PKEY=10ac8d7l0ac41ap1fb5f19ae4f7bah61300e117907e1btbf544475b1c3bc6b60
+   export CC_USER_PASS=WalletPassPhrase
    export FLASK_APP=app.py
+   #+end_src
+
+   #+begin_src shell
    flask run
    #+end_src
