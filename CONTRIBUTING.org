@@ -193,6 +193,18 @@ Testing environment is:
 
    Execute the command within the same folder where the flask app is located.
 
+   As an example one could use a startup script like so:
+   #+begin_src shell
+   #!/bin/sh
+   GETH_NODE_URI="/path/to/Ethereum/geth.ipc" \
+   GETH_USES_IPC=True \
+   GETH_USES_POA=True \
+   ETH_USER_PKEY="Some Secret Key" \
+   ETH_USER_PASS="Some Secret Pass" \
+   CC_FILE="/path/to/creativeContracts/contracts/CreativeContract.sol" \
+   celery -A app.celery worker
+   #+end_src
+
 ** Running the web application
    The web application lives in the ~formProcessing~.
    #+begin_src shell
@@ -208,5 +220,17 @@ Testing environment is:
    #+end_src
 
    #+begin_src shell
+   flask run
+   #+end_src
+
+   As an example one could use a startup script like so:
+   #+begin_src shell
+   #!/bin/sh
+   GETH_NODE_URI="/path/to/Ethereum/geth.ipc" \
+   GETH_USES_IPC=True \
+   GETH_USES_POA=True \
+   ETH_USER_PKEY="Some Secret Key" \
+   ETH_USER_PASS="Some Secret Pass" \
+   CC_FILE="/path/to/creativeContracts/contracts/CreativeContract.sol" \
    flask run
    #+end_src
