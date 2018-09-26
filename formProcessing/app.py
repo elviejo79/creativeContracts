@@ -1,6 +1,7 @@
 import os
 import json
 import pprint
+from dateutil import parser as dateparser
 from flask import Flask
 from flask import render_template
 from flask import request
@@ -16,8 +17,8 @@ app.config.update(
 
     # Options to connect to the Ethereum node used for deployment
     GETH_NODE_URI=os.getenv('GETH_NODE_URI', 'http://localhost:8565'),
-    GETH_USES_IPC=False,
-    GETH_USES_POA=False,
+    GETH_USES_IPC=os.getenv('GETH_USES_IPC', False),
+    GETH_USES_POA=os.getenv('GETH_USES_POA', False),
 
     # User account used to sign and deploy the contract
     ETH_USER_PKEY=os.environ['ETH_USER_PKEY'],
@@ -43,23 +44,32 @@ def deploy_new_contract(contract_hash, contract_url, event_details):
     # TODO: Generate a new PDF with a QR code of the 'contract_address'
     # TODO Some parameters are not in the 'event_data'
     # TODO Validate convert dates
-    constructor_arguments = {
-        'customer_address': event_details['customerAddress'],
-        'oracle_address': event_details['oracleAddress'],
-        'contract_amount': event_details['amount'],
-        'oracle_fee': event_details['oracleFee'],
-        'lcurl': contract_url,
-        'lchash': contract_hash,
-        'contract_duedate_ts': event_details['dueDate'],
-        'contract_settlement_ts': event_details['settlementDate'],
-        'contract_delivery_ts': event_details['dateOfDelivery'],
-    }
 
-    sc.set_contract_data(constructor_arguments)
+    # Transform dates to unix timestamps
+    due_ts = dateparser.parse(event_details['dueDate']).timestamp()
+    settlement_ts = dateparser.parse(
+        event_details['settlementDate']).timestamp()
+    delivery_ts = dateparser.parse(event_details['dateOfDelivery']).timestamp()
+
+    sc.set_contract_data(
+        customer_address=event_details['customerAddress'],
+        oracle_address=event_details['oracleAddress'],
+        contract_amount=int(event_details['amount']),
+        oracle_fee=int(event_details['oracleFee']),
+        lcurl=contract_url,
+        lchash=contract_hash,
+        contract_duedate_ts=due_ts,
+        contract_settlement_ts=settlement_ts,
+        contract_delivery_ts=delivery_ts)
+
+    # Read solidity code
+    source_code = ''
+    with open(celery.conf['CREATIVE_CONTRACT_FILE'], 'r') as f:
+        source_code = ''.join(f.readlines())
 
     # This will block until transaction is mined (default timeout is 120s)
     contract_address = sc.deploy(celery.conf['CREATIVE_CONTRACT_NAME'],
-                                 celery.conf['CREATIVE_CONTRACT_FILE'])
+                                 source_code)
 
     # PDF Generation
     event_details['ETHContractAddress'] = contract_address

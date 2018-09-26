@@ -238,10 +238,18 @@ class SmartContract:
         # TODO Can use this to estimate gas and log that out
         # https://web3py.readthedocs.io/en/stable/web3.eth.html#web3.eth.Eth.estimateGas
 
-        tx_hash = contract.constructor(**self.contract_data).transact({
-            'from':
-            self.default_account
-        })
+        tx_hash = contract.constructor(
+            self.contract_data['customer_address'],
+            self.contract_data['oracle_address'],
+            self.contract_data['contract_amount'],
+            self.contract_data['oracle_fee'], self.contract_data['lcurl'],
+            self.contract_data['lchash'],
+            self.contract_data['contract_settlement_ts'],
+            self.contract_data['contract_duedate_ts'],
+            self.contract_data['contract_delivery_ts']).transact({
+                'from':
+                self.default_account
+            })
 
         # TODO Make async with: waitForTransactionReceipt
         #      Default timeout: 120
