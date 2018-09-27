@@ -48,14 +48,14 @@ def deploy_new_contract(contract_hash, contract_url, event_details):
     # Transform dates to unix timestamps
     due_ts = int(dateparser.parse(event_details['dueDate']).timestamp())
     settlement_ts = int(
-        dateparser.parse(event_details['settlementDate']).timestamp())
+        dateparser.parse(event_details['fechaEvento']).timestamp())
     delivery_ts = int(
-        dateparser.parse(event_details['dateOfDelivery']).timestamp())
+        dateparser.parse(event_details['fechaEnterga']).timestamp())
 
     sc.set_contract_data(
         customer_address=event_details['customerAddress'],
         oracle_address=event_details['oracleAddress'],
-        contract_amount=int(event_details['amount']),
+        contract_amount=int(event_details['precioFinal']),
         oracle_fee=int(event_details['oracleFee']),
         lcurl=contract_url,
         lchash=contract_hash,
