@@ -52,11 +52,13 @@ def deploy_new_contract(contract_hash, contract_url, event_details):
     delivery_ts = int(
         dateparser.parse(event_details['fechaEnterga']).timestamp())
 
+    oracleFee = int(0.10 * int(event_details['precioFinal']))
+
     sc.set_contract_data(
         customer_address=event_details['customerAddress'],
         oracle_address=event_details['oracleAddress'],
         contract_amount=int(event_details['precioFinal']),
-        oracle_fee=int(event_details['oracleFee']),
+        oracle_fee=oracleFee,
         lcurl=contract_url,
         lchash=contract_hash,
         contract_duedate_ts=due_ts,
@@ -129,8 +131,8 @@ def contrato_new():
 
     # PDF Generation
     contract_hash = generate_pdf(event_data)
-    contract_url = "%sstatic/contratos/%s.pdf" % (request.host_url,
-                                                  contract_hash)
+    contract_url = "%sstatic/contratos/%s_deployed.pdf" % (request.host_url,
+                                                           contract_hash)
 
     # Smart Contract Generation
     deploy_new_contract.delay(contract_hash, contract_url, event_data)  # async
@@ -138,5 +140,5 @@ def contrato_new():
     # TODO Should add the expected URL for the post-deployed contract PDF?
     return json.dumps({
         'legalContractUrl': contract_url,
-        'legalContractHash': contract_hash
+        'legalContractHash': contract_hash,
     })
